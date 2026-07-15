@@ -30,6 +30,8 @@ save_model: True # if True, will save the model to the model_dir
 # detach rocket settings
 num_kernels: 10000
 num_models: 10
+drop_percentage: 0.05    # fraction of features removed per SFD step (higher = faster)
+total_number_steps: 150  # max SFD iterations (reduce to limit training time)
 
 # mne / data loader settings
 mne_preload: False

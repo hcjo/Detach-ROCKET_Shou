@@ -107,9 +107,13 @@ def train_model(train_epochs, config, split_counter, cv=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Device: ", device)
     if config['model_type'] == 'detach_rocket':
-        model = DetachRocket('pytorch_minirocket', num_kernels=config['num_kernels'], verbose=False, device=device) # multivariate; input_shape=(n_samples, n_channels, timestamps)
+        model = DetachRocket('pytorch_minirocket', num_kernels=config['num_kernels'], verbose=False, device=device,
+                             drop_percentage=config.get('drop_percentage', 0.05),
+                             total_number_steps=config.get('total_number_steps', 150)) # multivariate; input_shape=(n_samples, n_channels, timestamps)
     elif config['model_type'] == 'detach_ensemble':
-        model = DetachEnsemble(num_models=config['num_models'], num_kernels=config['num_kernels'], model_type='pytorch_minirocket', verbose=False)
+        model = DetachEnsemble(num_models=config['num_models'], num_kernels=config['num_kernels'], model_type='pytorch_minirocket', verbose=False,
+                               drop_percentage=config.get('drop_percentage', 0.05),
+                               total_number_steps=config.get('total_number_steps', 150))
     elif config['model_type'] == 'catch22':
         model = Catch22CumlClassifier(batch_size=512, n_jobs=8)
 

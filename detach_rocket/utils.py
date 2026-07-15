@@ -122,17 +122,18 @@ def feature_detachment(classifier,
         feature_importance[~selection_mask] = 0
 
         # Compute feature importance taking into account multilabel type
-        if np.shape(classifier.coef_)[0]>1:
+        coef_ = np.atleast_2d(classifier.coef_)
+        if coef_.shape[0]>1:
             if multilabel_type == "norm":
-                feature_importance[selection_mask] = np.linalg.norm(classifier.coef_[:,:],axis=0,ord=2)
+                feature_importance[selection_mask] = np.linalg.norm(coef_[:,:],axis=0,ord=2)
             elif multilabel_type == "max":
-                feature_importance[selection_mask] = np.linalg.norm(classifier.coef_[:,:],axis=0,ord=np.inf)
+                feature_importance[selection_mask] = np.linalg.norm(coef_[:,:],axis=0,ord=np.inf)
             elif multilabel_type == "avg":
-                feature_importance[selection_mask] = np.linalg.norm(classifier.coef_[:,:],axis=0,ord=1)
+                feature_importance[selection_mask] = np.linalg.norm(coef_[:,:],axis=0,ord=1)
             else:
                 raise ValueError('Invalid multilabel_type argument. Choose from: "norm", "max", or "avg".')
         else:
-            feature_importance[selection_mask] = np.abs(classifier.coef_)[0,:]
+            feature_importance[selection_mask] = np.abs(coef_)[0,:]
 
         if verbose==True:
             print("Step {} out of {}".format(count+1, total_number_steps))

@@ -31,6 +31,8 @@ class DetachRocket:
     - verbose: Verbosity for logging.
     - multilabel_type: Type of feature ranking in case of multilabel classification ("max" by default).
     - fixed_percentage: If not None, the trade_off parameter is ignored and the model is fitted with a fixed percentage of selected features.
+    - drop_percentage: Fraction of features removed per SFD step (default 0.05). Higher = fewer steps, faster training.
+    - total_number_steps: Maximum number of SFD iterations (default 150). Reduce to limit training time.
 
     Attributes:
     - _sfd_curve: Curve for Sequential Feature Detachment.
@@ -69,7 +71,9 @@ class DetachRocket:
         verbose = False,
         multilabel_type = 'max',
         fixed_percentage = None,
-        device=None
+        device=None,
+        drop_percentage=0.05,
+        total_number_steps=150
         ):
 
         self._sfd_curve = None
@@ -98,6 +102,8 @@ class DetachRocket:
         self.multilabel_type = multilabel_type
         self.fixed_percentage = fixed_percentage
         self.device=device
+        self.drop_percentage = drop_percentage
+        self.total_number_steps = total_number_steps
 
         # Create rocket model
         if model_type == "rocket":
@@ -180,7 +186,7 @@ class DetachRocket:
             if self.verbose == True:
                 print('Applying Sequential Feature Detachment')
 
-            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_val, y_train, y_val, verbose=self.verbose, multilabel_type = self.multilabel_type)
+            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_val, y_train, y_val, drop_percentage=self.drop_percentage, total_number_steps=self.total_number_steps, verbose=self.verbose, multilabel_type = self.multilabel_type)
 
             self._is_fitted = True
 
@@ -206,7 +212,7 @@ class DetachRocket:
             if self.verbose == True:
                 print('Applying Sequential Feature Detachment')
             
-            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_test, y_train, y_test, verbose=self.verbose, multilabel_type = self.multilabel_type)
+            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_test, y_train, y_test, drop_percentage=self.drop_percentage, total_number_steps=self.total_number_steps, verbose=self.verbose, multilabel_type = self.multilabel_type)
 
             self._is_fitted = True
 
@@ -327,6 +333,8 @@ class DetachMatrix:
     - val_ratio: Validation set ratio.
     - verbose: Verbosity for logging.
     - multilabel_type: Type of multilabel classification ("max" by default).
+    - drop_percentage: Fraction of features removed per SFD step (default 0.05).
+    - total_number_steps: Maximum number of SFD iterations (default 150).
 
     Attributes:
     - _sfd_curve: Curve for Sequential Feature Detachment.
@@ -364,7 +372,9 @@ class DetachMatrix:
         val_ratio=0.33,
         verbose = False,
         multilabel_type = 'max',
-        fixed_percentage = None
+        fixed_percentage = None,
+        drop_percentage=0.05,
+        total_number_steps=150
         ):
 
         self._sfd_curve = None
@@ -389,6 +399,8 @@ class DetachMatrix:
         self.verbose = verbose
         self.multilabel_type = multilabel_type
         self.fixed_percentage = fixed_percentage
+        self.drop_percentage = drop_percentage
+        self.total_number_steps = total_number_steps
 
         self._full_classifier = RidgeClassifierCV(alphas=np.logspace(-10,10,20))
         self._scaler = StandardScaler(with_mean=True)
@@ -449,7 +461,7 @@ class DetachMatrix:
             if self.verbose == True:
                 print('Applying Sequential Feature Detachment')
 
-            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_val, y_train, y_val, verbose=self.verbose, multilabel_type = self.multilabel_type)
+            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_val, y_train, y_val, drop_percentage=self.drop_percentage, total_number_steps=self.total_number_steps, verbose=self.verbose, multilabel_type = self.multilabel_type)
 
             self._is_fitted = True
 
@@ -481,7 +493,7 @@ class DetachMatrix:
             if self.verbose == True:
                 print('Applying Sequential Feature Detachment')
             
-            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_test, y_train, y_test, verbose=self.verbose, multilabel_type = self.multilabel_type)
+            self._percentage_vector, _, self._sfd_curve, self._feature_importance_matrix = feature_detachment(sfd_classifier, X_train, X_test, y_train, y_test, drop_percentage=self.drop_percentage, total_number_steps=self.total_number_steps, verbose=self.verbose, multilabel_type = self.multilabel_type)
 
             self._is_fitted = True
 
@@ -839,7 +851,9 @@ class DetachEnsemble():
                 verbose=False,
                 multilabel_type='max',
                 fixed_percentage=None,
-                device=None
+                device=None,
+                drop_percentage=0.05,
+                total_number_steps=150
                 ):
             
         assert model_type == 'pytorch_minirocket', f"Incorrect model_type {model_type}: DetachEnsemble currently only supports 'pytorch_minirocket'"
@@ -857,7 +871,9 @@ class DetachEnsemble():
                             verbose=verbose,
                             multilabel_type=multilabel_type,
                             fixed_percentage=fixed_percentage,
-                            device=device
+                            device=device,
+                            drop_percentage=drop_percentage,
+                            total_number_steps=total_number_steps
                            )
 
             self.derockets.append(_DetachRocket)
